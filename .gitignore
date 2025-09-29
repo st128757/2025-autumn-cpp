@@ -1,0 +1,14 @@
+# Файлы Visual Studio
+*.vcxproj
+*.sln
+*.suo
+*.user
+*.vcxproj.filters
+*.vcxproj.user
+
+# Папки Visual Studio
+.vs/
+Debug/
+Release/
+x64/
+x86/
