@@ -21,32 +21,34 @@ jobs:
         
     - name: Display Makefile info
       run: |
+        # Исправлено: используем то же имя файла, что и в проверке
         if [ -f "makefile_HW1" ]; then
           echo "=== Makefile содержимое ==="
-          cat Makefile
+          cat makefile_HW1  # ← ИСПРАВЛЕНО: маленькая m
           echo "=== Доступные цели ==="
-          make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u
+          make -f makefile_HW1 -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u
         else
           echo "❌ Makefile не найден"
+          ls -la  # ← ДОБАВЛЕНО: для отладки - посмотрим какие файлы есть
           exit 1
         fi
         
     - name: Build project
       run: |
-        # Пробуем разные common targets
-        if make -q all 2>/dev/null; then
-          make all
-        elif make -q main 2>/dev/null; then
-          make main
+        # Указываем конкретный файл для make
+        if make -f makefile_HW1 -q all 2>/dev/null; then
+          make -f makefile_HW1 all
+        elif make -f makefile_HW1 -q main 2>/dev/null; then
+          make -f makefile_HW1 main
         else
-          make
+          make -f makefile_HW1
         fi
         
     - name: Run tests if exists
       run: |
-        if make -q test 2>/dev/null; then
+        if make -f makefile_HW1 -q test 2>/dev/null; then
           echo "🔧 Запуск тестов..."
-          make test
+          make -f makefile_HW1 test
         else
           echo "ℹ️ Цель 'test' не найдена в Makefile"
         fi
@@ -54,7 +56,7 @@ jobs:
     - name: Clean build (optional)
       if: always()
       run: |
-        if make -q clean 2>/dev/null; then
+        if make -f makefile_HW1 -q clean 2>/dev/null; then
           echo "🧹 Очистка build..."
-          make clean
+          make -f makefile_HW1 clean
         fi
