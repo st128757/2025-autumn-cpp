@@ -1,69 +1,18 @@
-name: C++ CI with Makefile
-
-on:
-  push:
-    branches: [ ci_test ]
-  pull_request:
-    branches: [ main ]
-
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
 jobs:
-  build:
+  Explore-GitHub-Actions:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Install build tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++ make
-        
-    - name: Find and display Makefile info
-      run: |
-        echo "=== Поиск Makefile в репозитории ==="
-        find . -name "*akefile*" -type f | grep -v ".git" || true
-        
-        if [ -f "21.09.25_HW1/makefile_HW1" ]; then
-          echo "✅ Makefile найден в 21.09.25_HW1/"
-          cd 21.09.25_HW1
-          echo "=== Makefile содержимое ==="
-          cat makefile_HW1
-          echo "=== Доступные цели ==="
-          make -f makefile_HW1 -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u
-        else
-          echo "❌ Makefile не найден"
-          echo "=== Содержимое директорий ==="
-          ls -la */ || true
-          exit 1
-        fi
-        
-    - name: Build project
-      run: |
-        cd 21.09.25_HW1
-        if make -f makefile_HW1 -q all 2>/dev/null; then
-          make -f makefile_HW1 all
-        elif make -f makefile_HW1 -q main 2>/dev/null; then
-          make -f makefile_HW1 main
-        else
-          make -f makefile_HW1
-        fi
-        
-    - name: Run tests if exists
-      run: |
-        cd 21.09.25_HW1
-        if make -f makefile_HW1 -q test 2>/dev/null; then
-          echo "🔧 Запуск тестов..."
-          make -f makefile_HW1 test
-        else
-          echo "ℹ️ Цель 'test' не найдена в Makefile"
-        fi
-        
-    - name: Clean build (optional)
-      if: always()
-      run: |
-        cd 21.09.25_HW1
-        if make -f makefile_HW1 -q clean 2>/dev/null; then
-          echo "🧹 Очистка build..."
-          make -f makefile_HW1 clean
-        fi
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v5
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
