@@ -21,7 +21,7 @@ jobs:
         
     - name: Display Makefile info
       run: |
-        if [ -f "Makefile" ]; then
+        if [ -f "makefile_HW1" ]; then
           echo "=== Makefile содержимое ==="
           cat Makefile
           echo "=== Доступные цели ==="
