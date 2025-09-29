@@ -1,0 +1,60 @@
+name: C++ CI with Makefile
+
+on:
+  push:
+    branches: [ ci_test ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Install build tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ make
+        
+    - name: Display Makefile info
+      run: |
+        if [ -f "Makefile" ]; then
+          echo "=== Makefile содержимое ==="
+          cat Makefile
+          echo "=== Доступные цели ==="
+          make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u
+        else
+          echo "❌ Makefile не найден"
+          exit 1
+        fi
+        
+    - name: Build project
+      run: |
+        # Пробуем разные common targets
+        if make -q all 2>/dev/null; then
+          make all
+        elif make -q main 2>/dev/null; then
+          make main
+        else
+          make
+        fi
+        
+    - name: Run tests if exists
+      run: |
+        if make -q test 2>/dev/null; then
+          echo "🔧 Запуск тестов..."
+          make test
+        else
+          echo "ℹ️ Цель 'test' не найдена в Makefile"
+        fi
+        
+    - name: Clean build (optional)
+      if: always()
+      run: |
+        if make -q clean 2>/dev/null; then
+          echo "🧹 Очистка build..."
+          make clean
+        fi
