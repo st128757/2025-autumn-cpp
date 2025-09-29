@@ -19,23 +19,28 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y g++ make
         
-    - name: Display Makefile info
+    - name: Find and display Makefile info
       run: |
-        # Исправлено: используем то же имя файла, что и в проверке
-        if [ -f "makefile_HW1" ]; then
+        echo "=== Поиск Makefile в репозитории ==="
+        find . -name "*akefile*" -type f | grep -v ".git" || true
+        
+        if [ -f "21.09.25_HW1/makefile_HW1" ]; then
+          echo "✅ Makefile найден в 21.09.25_HW1/"
+          cd 21.09.25_HW1
           echo "=== Makefile содержимое ==="
-          cat makefile_HW1  # ← ИСПРАВЛЕНО: маленькая m
+          cat makefile_HW1
           echo "=== Доступные цели ==="
           make -f makefile_HW1 -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u
         else
           echo "❌ Makefile не найден"
-          ls -la  # ← ДОБАВЛЕНО: для отладки - посмотрим какие файлы есть
+          echo "=== Содержимое директорий ==="
+          ls -la */ || true
           exit 1
         fi
         
     - name: Build project
       run: |
-        # Указываем конкретный файл для make
+        cd 21.09.25_HW1
         if make -f makefile_HW1 -q all 2>/dev/null; then
           make -f makefile_HW1 all
         elif make -f makefile_HW1 -q main 2>/dev/null; then
@@ -46,6 +51,7 @@ jobs:
         
     - name: Run tests if exists
       run: |
+        cd 21.09.25_HW1
         if make -f makefile_HW1 -q test 2>/dev/null; then
           echo "🔧 Запуск тестов..."
           make -f makefile_HW1 test
@@ -56,6 +62,7 @@ jobs:
     - name: Clean build (optional)
       if: always()
       run: |
+        cd 21.09.25_HW1
         if make -f makefile_HW1 -q clean 2>/dev/null; then
           echo "🧹 Очистка build..."
           make -f makefile_HW1 clean
