@@ -1,2 +1,0 @@
-all:
-	g++ Source.cpp -o MyProg_HW2
