@@ -1,0 +1,33 @@
+# Copyright (c) 2024 Your Name or Company. All rights reserved.
+
+# Компилятор и флаги
+CXX = g++
+CXXFLAGS = -std=c++11 -Wall -Wextra -Werror -pedantic
+TARGET = program
+OBJS = string.o main.o
+
+# Основная цель
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+
+# Компиляция string.cpp
+string.o: string.cpp string.h
+	$(CXX) $(CXXFLAGS) -c string.cpp -o string.o
+
+# Компиляция main.cpp (если есть)
+main.o: main.cpp string.h
+	$(CXX) $(CXXFLAGS) -c main.cpp -o main.o
+
+# Очистка
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+# Установка зависимостей
+depend:
+	$(CXX) -MM *.cpp > dependencies.make
+
+# Включение зависимостей (если сгенерирован файл зависимостей)
+-include dependencies.make
+
+# Phony targets
+.PHONY: clean depend
