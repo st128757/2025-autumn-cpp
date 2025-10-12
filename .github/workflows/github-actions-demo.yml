@@ -1,60 +1,92 @@
-name: C++ CI with Makefile
+name: HW5 
 
 on:
   push:
-    branches: [ ci_test ]
+    paths: 
+     - 'Homework_5/**'
   pull_request:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - 'Homework_5/**'
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Check Google Style
+        run: find ./Homework_1 -name '*.cpp' -o -name '*.h' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
+
   build:
     runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        sanitizer: [none, address, undefined]
+        exclude:
+          - sanitizer: none
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+          
+      - name: Install dependencies
+        run: |
+         sudo apt-get update
+         sudo apt-get install -y \
+          build-essential \
+          clang \
+      - name: Build with sanitizers
+        run: |
+         if [ "${{ matrix.sanitizer }}" = "address" ]; then
+         export CXX="clang++"  
+         export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+         export LDFLAGS="-fsanitize=address"
+         elif [ "${{ matrix.sanitizer }}" = "undefined" ]; then
+         export CXX="clang++"
+         export CXXFLAGS="-fsanitize=undefined -fno-omit-frame-pointer -g"  
+         export LDFLAGS="-fsanitize=undefined"
+         fi 
+  
+         cd Homework_5
+         make -j4
+
+      - name: Run tests with sanitizers
+        run: |
+         if [ "${{ matrix.sanitizer }}" = "address" ]; then
+         export ASAN_OPTIONS=detect_leaks=1:halt_on_error=1
+         elif [ "${{ matrix.sanitizer }}" = "undefined" ]; then
+         export UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1
+         fi
+
+         cd Homework_5
+         make -j4
+
+  build-normal:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Install build tools
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y g++ make
-        
-    - name: Display Makefile info
+        sudo apt-get update 
+        sudo apt-get install -y build-essential g++-14
+
+    - name: Build
       run: |
-        if [ -f "Makefile" ]; then
-          echo "=== Makefile содержимое ==="
-          cat Makefile
-          echo "=== Доступные цели ==="
-          make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u
-        else
-          echo "❌ Makefile не найден"
-          exit 1
-        fi
-        
-    - name: Build project
+       cd Homework_5 
+       make -j4
+
+    - name: Run tests
       run: |
-        # Пробуем разные common targets
-        if make -q all 2>/dev/null; then
-          make all
-        elif make -q main 2>/dev/null; then
-          make main
-        else
-          make
-        fi
-        
-    - name: Run tests if exists
-      run: |
-        if make -q test 2>/dev/null; then
-          echo "🔧 Запуск тестов..."
-          make test
-        else
-          echo "ℹ️ Цель 'test' не найдена в Makefile"
-        fi
-        
-    - name: Clean build (optional)
-      if: always()
-      run: |
-        if make -q clean 2>/dev/null; then
-          echo "🧹 Очистка build..."
-          make clean
-        fi
+       cd Homework_5
+       make test
+
+
+
+
