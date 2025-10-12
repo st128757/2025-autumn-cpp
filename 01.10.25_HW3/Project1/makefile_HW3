@@ -1,2 +1,0 @@
-all:
-	g++ Source.cpp -o myProg_HW3
